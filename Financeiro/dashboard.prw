@@ -48,65 +48,58 @@ Static Function ViewDef()
 Return oView
 
 Static Function ExibeGraf()
+
     Local oDlg
+    Local oFWChart 
+    Local aRand := {} 
     Local nVenc  := 0
     Local nAVenc := 0
     Local cAlias := Alias()
     Local nPosRec := (cAlias)->(RecNo())
     Local nTotal := 0
-    Local nAltV  := 0
-    Local nAltA  := 0
-    Local nI     := 0
     
     (cAlias)->(DbGoTop())
 
     While (cAlias)->(!Eof())
-
         If (cAlias)->E1_VALOR > 0 .And. !(cAlias)->(Deleted())
-
             If (cAlias)->E1_VENCTO < dDataBase
                 nVenc += (cAlias)->E1_VALOR
             Else
                 nAVenc += (cAlias)->E1_VALOR
             EndIF
-
         EndIF
-
         (cAlias)->(DbSkip())
     EndDo
 
     (cAlias)->(DbGoTo(nPosRec))
-
     nTotal := nVenc + nAVenc
-  
-    nAltV := If(nTotal > 0, Int((nVenc / nTotal) * 15), 0)
-    nAltA := If(nTotal > 0, Int((nAVenc / nTotal) * 15), 0)
+    
+    If nTotal == 0
+        MsgInfo("Nenhum titulo encontrado para gerar o grafico.", "Dashboard Financeiro")
+        Return Nil
+    EndIf
 
-    DEFINE MSDIALOG oDlg TITLE "DASHBOARD - Gráfico" FROM 0,0 TO 400,600 PIXEL
+    DEFINE MSDIALOG oDlg TITLE "DASHBOARD - Gráfico Financeiro" FROM 0,0 TO 400,600 PIXEL
         
-        @ 010, 115 SAY "Gráfico Financeiro " FONT TFont():New("Arial",,-18,.T.) PIXEL OF oDlg
+        oFWChart := FWChartFactory():New()
+        oFWChart := oFWChart:getInstance(BARCHART) 
         
-        // VENCIDOS
-        For nI := 1 To nAltV
-
-            @ 150-(nI*8), 060 SAY "||||||||||" FONT TFont():New("Arial",,-16,.T.) PIXEL OF oDlg COLORS CLR_RED
-
-        Next
-
-        @ 165, 055 SAY "VENCIDOS" PIXEL OF oDlg COLORS CLR_RED
-        @ 180, 045 SAY "R$ " + Transform(nVenc, "@E 999,999.92") PIXEL OF oDlg COLORS CLR_RED
-
-        // A VENCER
-        For nI := 1 To nAltA
-
-            @ 150-(nI*8), 130 SAY "||||||||||" FONT TFont():New("Arial",,-16,.T.) PIXEL OF oDlg COLORS CLR_GREEN
-
-        Next
-
-        @ 165, 125 SAY "A VENCER" PIXEL OF oDlg COLORS CLR_GREEN
-        @ 180, 115 SAY "R$ " + Transform(nAVenc, "@E 999,999.92") PIXEL OF oDlg COLORS CLR_GREEN
-
-        @ 180, 250 BUTTON "Fechar" SIZE 050, 015 ACTION oDlg:End() PIXEL OF oDlg
+        oFWChart:Init(oDlg, .T., .T. )
+        oFWChart:SetTitle("Títulos: Vencidos x A Vencer", CONTROL_ALIGN_CENTER)
+        
+        oFWChart:addSerie("Vencidos", nVenc)
+        oFWChart:addSerie("A Vencer", nAVenc)
+        
+        oFWChart:setLegend( CONTROL_ALIGN_LEFT )
+        oFWChart:cPicture := "@E 999,999,999.99"
+        
+        aAdd(aRand, {"200,050,050", "150,000,000"}) // Tom avermelhado
+        aAdd(aRand, {"050,200,050", "000,150,000"}) // Tom esverdeado
+        
+        oFWChart:oFWChartColor:aRandom := aRand
+        oFWChart:oFWChartColor:SetColor("Random")
+        
+        oFWChart:Build()
 
     ACTIVATE MSDIALOG oDlg CENTERED
 
