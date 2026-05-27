@@ -3,7 +3,7 @@
 User Function EMAIL()
 
     Local cCorpo := ""
-    Local cEmailDest := "p.anasilva1983@gmail.com"
+    Local cEmailDest := "email"
     Local nTitulo := 0
     Local cAssunto := ""
     Local cNomeCli := ""
@@ -13,12 +13,12 @@ User Function EMAIL()
 
     dbSelectArea('SE1')
 
-    SE1->(dbSetOrder(6)) // ORDEM DATA DE VENCIMENTO
+    SE1->(dbSetOrder(6)) 
 
     IF SE1->(dbSeek("01" + dtos(dDataBase)))
 
-        cCorpo := "Olá equipe financeira!" + CRLF 
-        cCorpo += "Segue a lista dos títulos que vencem hoje (" + dtoc(dDataBase) + "):" + CRLF
+        cCorpo := "OlÃ¡ equipe financeira!" + CRLF 
+        cCorpo += "Segue a lista dos tÃ­tulos que vencem hoje (" + dtoc(dDataBase) + "):" + CRLF
 
         While !SE1->(eof()) .and. SE1->E1_VENCTO == dDataBase
 
@@ -42,8 +42,8 @@ User Function EMAIL()
     
     Else
 
-        cAssunto := "Financeiro - [Aviso] Sem títulos para hoje"
-        cCorpo := "Não existem registros de títulos vencendo em " + dtoc(dDataBase)
+        cAssunto := "Financeiro - [Aviso] Sem tÃ­tulos para hoje"
+        cCorpo := "NÃ£o existem registros de tÃ­tulos vencendo em " + dtoc(dDataBase)
         U_SendMyMail(cEmailDest, cAssunto, cCorpo)
 
     EndIF
@@ -55,8 +55,8 @@ Return Nil
 
 Static Function U_SendMyMail(cPara, cAssunto, cMensagem)
     Local cCmd     := ""
-    Local cUser    := "p.anasilva1983@gmail.com"
-    Local cPass    := "qksn oojy nznd zjkt"
+    Local cUser    := "email"
+    Local cPass    := "senha GOOGLE"
     
     cMensagem := StrTran(cMensagem, CRLF, " ") 
     cMensagem := StrTran(cMensagem, "'", "") 
